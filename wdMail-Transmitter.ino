@@ -3,9 +3,7 @@
 // Date: 19-DEC-2018
 
 #include <SPI.h>
-//#include <printf.h>
 #include <nRF24L01.h>
-//#include <RF24_config.h>
 #include <RF24.h>
 
 const int  sensorPin      =       2; // Number of pin to listen to
