@@ -21,7 +21,7 @@ void setup() {
   Serial.begin(9600); // Why? / is needed?
   radio.begin();
   radio.openReadingPipe(0, pipeAddress);
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(radioPowerLevel);
   radio.startListening();
 }
 

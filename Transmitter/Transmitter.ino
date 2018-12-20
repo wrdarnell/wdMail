@@ -21,7 +21,7 @@ void setup() {
   // See how much can be moved into alert code to reduce power usage
   radio.begin();
   radio.openWritingPipe(pipeAddress);
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(radioPowerLevel);
   radio.stopListening();
   radio.powerDown();
   pinMode(sensorPin, INPUT);
