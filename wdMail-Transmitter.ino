@@ -2,11 +2,11 @@
 // Auth: Will Darnell
 // Date: 19-DEC-2018
 
-const int  sensorPin      =  2; // Number of pin to listen to
-const long debouncingTime = 15; // Milliseconds to wait for debounce
+const int  sensorPin    =   2; // Number of pin to listen to
+const long debouncingMs = 250; // Milliseconds to wait for debounce
 
-volatile int  sensorState = 0;
-volatile long lastMicros;
+volatile          int  sensorState = 0;
+volatile unsigned long lastSensorFireMs;
 
 void setup() {
   pinMode(sensorPin, INPUT);
@@ -19,9 +19,9 @@ void loop() {
 }
 
 void debounceInterrupt() {
-  if ((long)(micros() - lastMicros) >= debouncingTime * 1000) {
+  if ((long)(millis() - lastSensorFireMs) >= debouncingMs) {
     onSensorChange();
-    lastMicros = micros();
+    lastSensorFireMs = millis();
   }
 }
 
