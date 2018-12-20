@@ -1,3 +1,7 @@
+// File: wdMail-Client.ino
+// Auth: Will Darnell
+// Date: 19-DEC-2018
+
 void setup() {
   // put your setup code here, to run once:
 
