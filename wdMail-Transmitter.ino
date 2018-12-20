@@ -1,4 +1,4 @@
-// File: wdMail-Client.ino
+// File: wdMail-Transmitter.ino
 // Auth: Will Darnell
 // Date: 19-DEC-2018
 
