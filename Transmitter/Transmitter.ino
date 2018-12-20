@@ -5,11 +5,11 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include "../../wdMail/Common/wdMail.h"
 
 const int  sensorPin      =       2; // Number of pin to listen to
 const long debouncingMs   =     250; // Milliseconds to wait for debounce
 const int  dupAlertWaitS  =       1; // Seconds to wait until firing another alert
-const byte pipeAddress[6] = "11977"; // Transmit pipe
 
 volatile          int  sensorState = 0;
 volatile unsigned long lastSensorFireMs;
