@@ -11,13 +11,28 @@
 const int ledPin = LED_BUILTIN;
 // END TEST
 
+RF24 radio(7, 8); // CE, CSN
+
 void setup() {
   // Test Code
   pinMode(ledPin, OUTPUT); // Setup the on-board LED
   // End Test Code
+
+  Serial.begin(9600); // Why? / is needed?
+  radio.begin();
+  radio.openReadingPipe(0, pipeAddress);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.startListening();
 }
 
 void loop() {
+  if (radio.available()) {
+    char text[50] = "";
+    radio.read(&text, sizeof(text));
+    if (!strcmp(text, mailMessage)) {
+      HelloLED();
+    }
+  }
 }
 
 void HelloLED() {
