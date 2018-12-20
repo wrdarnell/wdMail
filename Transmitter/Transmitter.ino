@@ -48,7 +48,7 @@ void onSensorChange() {
 }
 
 void sendAlert() {
-  sendMessage("You've Got Mail!");
+  sendMessage(mailMessage);
 }
 
 void sendMessage(const char* msg) {
