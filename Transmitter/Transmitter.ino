@@ -10,6 +10,7 @@
 const int  sensorPin      =       2; // Number of pin to listen to
 const long debouncingMs   =     250; // Milliseconds to wait for debounce
 const int  dupAlertWaitS  =       1; // Seconds to wait until firing another alert
+const int  ledPin         = LED_BUILTIN; // <-- DEBUG
 
 volatile          int  sensorState = 0;
 volatile unsigned long lastSensorFireMs;
@@ -18,14 +19,20 @@ volatile unsigned long lastAlertMs;
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
-  // See how much can be moved into alert code to reduce power usage
+  // Radio Setup
   radio.begin();
   radio.openWritingPipe(pipeAddress);
   radio.setPALevel(radioPowerLevel);
   radio.stopListening();
   radio.powerDown();
+
+  // Setup an interrupt to watch the sensor pin
   pinMode(sensorPin, INPUT);
-  attachInterrupt(0, debounceInterrupt, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(sensorPin), debounceInterrupt, CHANGE);
+
+  // DEBUG
+  pinMode(ledPin, OUTPUT);
+  // END DEBUG
 }
 
 void loop() {
@@ -47,8 +54,14 @@ void onSensorChange() {
    }
 }
 
+void debugLED() {
+  int currentState = digitalRead(ledPin);
+  digitalWrite(ledPin, !currentState);
+}
+
 void sendAlert() {
   sendMessage(mailMessage);
+  debugLED();
 }
 
 void sendMessage(const char* msg) {
