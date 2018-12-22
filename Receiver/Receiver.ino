@@ -7,18 +7,19 @@
 #include <RF24.h>
 #include "../../wdMail/Common/wdMail.h"
 
-// TEST
 const int ledPin = LED_BUILTIN;
-// END TEST
 
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
-  // Test Code
+  // Setup Onboard LED
   pinMode(ledPin, OUTPUT); // Setup the on-board LED
-  // End Test Code
 
-  Serial.begin(9600); // Why? / is needed?
+  // Warm up serial port
+  Serial.begin(9600);
+  while (!Serial) {;}
+  
+  // Setup Radio
   radio.begin();
   radio.openReadingPipe(0, pipeAddress);
   radio.setPALevel(radioPowerLevel);
@@ -26,21 +27,28 @@ void setup() {
 }
 
 void loop() {
+  CheckForRadioMessage();
+}
+
+void CheckForRadioMessage() {
   if (radio.available()) {
-    char text[50] = "";
+    char text[32] = "";
     radio.read(&text, sizeof(text));
-    if (!strcmp(text, mailMessage)) {
-      HelloLED();
-    }
+    FlashLED();
+    NotifySerial(text);
   }
 }
 
-void HelloLED() {
+void FlashLED() {
   int i;
   for (i=0;i<5;i++) {
     digitalWrite(ledPin, HIGH);
-    delay(100);
+    delay(50);
     digitalWrite(ledPin, LOW);
-    delay(100);
+    delay(50);
   }
+}
+
+void NotifySerial(char* message) {
+  Serial.write(message);
 }
