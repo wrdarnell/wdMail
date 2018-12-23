@@ -7,13 +7,26 @@
 #include <RF24.h>
 #include "../../wdMail/Common/wdMail.h"
 
-const int ledPin = LED_BUILTIN;
+const int    statusLedPin = 2;
+const int     alertLedPin = 3;
+const int heartBeatLedPin = 4;
+const int   alertResetPin = 5;
+
+const int alertDelayS  = 5;
+
+volatile unsigned long lastAlert;
+volatile unsigned long lastStatus;
+volatile unsigned long lastReset;
+volatile           int alertOn;
 
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
-  // Setup Onboard LED
-  pinMode(ledPin, OUTPUT); // Setup the on-board LED
+  // Setup LED Pins
+  pinMode(alertLedPin,     OUTPUT);
+  pinMode(statusLedPin,    OUTPUT);
+  pinMode(heartBeatLedPin, OUTPUT);
+  pinMode(alertResetPin,   INPUT );
 
   // Warm up serial port
   Serial.begin(9600);
@@ -24,31 +37,73 @@ void setup() {
   radio.openReadingPipe(0, pipeAddress);
   radio.setPALevel(radioPowerLevel);
   radio.startListening();
+
+  // Defaults
+  alertOn = 1;
 }
 
 void loop() {
+  WatchResetButton();
   CheckForRadioMessage();
+  AlertLED();
+  SteadyStateLED();
+}
+
+void WatchResetButton() {
+  if ((((long)millis() - lastReset) > 2000) && digitalRead(alertResetPin)) {
+    alertOn = 0;
+    digitalWrite(alertLedPin,     HIGH);
+    digitalWrite(statusLedPin,    HIGH);
+    digitalWrite(heartBeatLedPin, HIGH);
+    delay(250);
+    digitalWrite(alertLedPin,     LOW);
+    digitalWrite(statusLedPin,    LOW);
+    digitalWrite(heartBeatLedPin, LOW);
+    lastReset = millis();
+  }
 }
 
 void CheckForRadioMessage() {
   if (radio.available()) {
     char text[32] = "";
     radio.read(&text, sizeof(text));
-    FlashLED();
+    if (!strcmp(text, mailMessage)) {
+      alertOn = 1;
+    } else if (!strcmp(text, heartBeatMessage)) {
+      HeartBeat();
+    }
     NotifySerial(text);
   }
 }
 
-void FlashLED() {
+void SteadyStateLED() {
+  if (Serial && ((long)millis() - lastStatus) > 3000) {
+    digitalWrite(statusLedPin, HIGH);
+    delay(5);
+    digitalWrite(statusLedPin, LOW);
+    lastStatus = millis(); 
+  }
+}
+
+void AlertLED() {
   int i;
-  for (i=0;i<5;i++) {
-    digitalWrite(ledPin, HIGH);
-    delay(50);
-    digitalWrite(ledPin, LOW);
-    delay(50);
+  if (alertOn && ((long)millis() - lastAlert) > (alertDelayS * 1000)) {
+    for (i=0;i<10;i++) {
+      digitalWrite(alertLedPin, HIGH);
+      delay(25);
+      digitalWrite(alertLedPin, LOW);
+      delay(25);
+      lastAlert = millis();
+    }
   }
 }
 
 void NotifySerial(char* message) {
   Serial.write(message);
+}
+
+void HeartBeat() {
+  digitalWrite(heartBeatLedPin, HIGH);
+  delay(250);
+  digitalWrite(heartBeatLedPin, LOW);  
 }
