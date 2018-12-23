@@ -67,13 +67,13 @@ void watchResetButton() {
 
 void checkForRadioMessage() {
   if (radio.available()) {
+    radioLED();
+    
     char text[32] = "";
     radio.read(&text, sizeof(text));
     
     if (!strcmp(text, mailMessage)) {
       alertOn = 1;
-    } else if (!strcmp(text, heartbeatMessage)) {
-      heartbeatLED(); // Flash for radio traffic
     }
     
     notifySerial(text);
@@ -108,7 +108,7 @@ void notifySerial(char* message) {
   Serial.write(buf);
 }
 
-void heartbeatLED() {
+void radioLED() {
   digitalWrite(heartBeatLedPin, HIGH);
   delay(5);
   digitalWrite(heartBeatLedPin, LOW);  
