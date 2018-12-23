@@ -12,20 +12,20 @@ const int     alertLedPin = 3;
 const int heartBeatLedPin = 4;
 const int   alertResetPin = 5;
 
-volatile unsigned long lastStatus;
 volatile unsigned long lastReset;
 
 volatile LED_BLINKER alertBlinker;
+volatile LED_BLINKER statusBlinker;
 
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
   // Setup LED Pins
-  pinMode(statusLedPin,    OUTPUT);
   pinMode(heartBeatLedPin, OUTPUT);
   pinMode(alertResetPin,   INPUT );
 
-  initBlinker(&alertBlinker, alertLedPin, 10, 25, 5);
+  initBlinker(&alertBlinker,   alertLedPin, 10, 25,  5);
+  initBlinker(&statusBlinker, statusLedPin,  1,  5, 10);
 
   // Warm up serial port
   Serial.begin(9600);
@@ -39,10 +39,11 @@ void setup() {
 }
 
 void loop() {
+  healthCheck();
   watchResetButton();
   checkForRadioMessage();
   blinkLED(&alertBlinker);
-  steadyStateLED();
+  blinkLED(&statusBlinker);
 }
 
 void watchResetButton() {
@@ -59,6 +60,13 @@ void watchResetButton() {
   }
 }
 
+void healthCheck() {
+  if (Serial)
+    statusBlinker.enabled = 1;
+  else
+    statusBlinker.enabled = 0;
+}
+
 void checkForRadioMessage() {
   if (radio.available()) {
     radioLED();
@@ -71,15 +79,6 @@ void checkForRadioMessage() {
     }
     
     notifySerial(text);
-  }
-}
-
-void steadyStateLED() {
-  if (Serial && ((long)millis() - lastStatus) > 3000) {
-    digitalWrite(statusLedPin, HIGH);
-    delay(5);
-    digitalWrite(statusLedPin, LOW);
-    lastStatus = millis(); 
   }
 }
 
