@@ -21,12 +21,12 @@ volatile LED_BLINKER radioBlinker;
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
-  // Setup LED Pins
+  // Setup pins
   pinMode(alertResetPin,   INPUT );
 
   initBlinker(&alertBlinker,   alertLedPin, 10, 25,  5);
   initBlinker(&statusBlinker, statusLedPin,  1,  5, 10);
-  initBlinker(&radioBlinker,   radioLedPin,  1,  5,  0);
+  initBlinker(&radioBlinker,   radioLedPin,  1   5,  0);
 
   // Warm up serial port
   Serial.begin(9600);
@@ -49,14 +49,9 @@ void loop() {
 }
 
 void watchResetButton() {
-  // Watches the reset button.  If pushed, clear alert status and flash all LEDs
+  // Watches the reset button.  If pushed, clear alert status
   if ((((long)millis() - lastReset) > 2000) && digitalRead(alertResetPin)) {
     stopBlinker(&alertBlinker);
-    
-    digitalWrite(statusLedPin,    HIGH);
-    delay(250);
-    digitalWrite(statusLedPin,    LOW);
-
     notifySerial((char*)"Reset Button Pressed");
     lastReset = millis();
   }
