@@ -50,6 +50,7 @@ void loop() {
 }
 
 void WatchResetButton() {
+  // Watches the reset button.  If pushed, clear alert status and flash all LEDs
   if ((((long)millis() - lastReset) > 2000) && digitalRead(alertResetPin)) {
     alertOn = 0;
     digitalWrite(alertLedPin,     HIGH);
@@ -65,12 +66,11 @@ void WatchResetButton() {
 
 void CheckForRadioMessage() {
   if (radio.available()) {
+    HeartBeatLED(); // Flash for radio traffic
     char text[32] = "";
     radio.read(&text, sizeof(text));
     if (!strcmp(text, mailMessage)) {
       alertOn = 1;
-    } else if (!strcmp(text, heartBeatMessage)) {
-      HeartBeat();
     }
     NotifySerial(text);
   }
@@ -102,7 +102,7 @@ void NotifySerial(char* message) {
   Serial.write(message);
 }
 
-void HeartBeat() {
+void HeartBeatLED() {
   digitalWrite(heartBeatLedPin, HIGH);
   delay(250);
   digitalWrite(heartBeatLedPin, LOW);  
