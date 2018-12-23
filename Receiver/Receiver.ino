@@ -12,8 +12,6 @@ const int     alertLedPin = 3;
 const int heartBeatLedPin = 4;
 const int   alertResetPin = 5;
 
-const int alertDelayS  = 5;
-
 volatile unsigned long lastStatus;
 volatile unsigned long lastReset;
 
@@ -23,16 +21,11 @@ RF24 radio(7, 8); // CE, CSN
 
 void setup() {
   // Setup LED Pins
-  pinMode(alertLedPin,     OUTPUT);
   pinMode(statusLedPin,    OUTPUT);
   pinMode(heartBeatLedPin, OUTPUT);
   pinMode(alertResetPin,   INPUT );
 
-  alertBlinker.pin     = alertLedPin;
-  alertBlinker.burst   = 10;
-  alertBlinker.freq    = 25;
-  alertBlinker.delay   = 5;
-  alertBlinker.enabled = 0;
+  initBlinker(&alertBlinker, alertLedPin, 10, 25, 5);
 
   // Warm up serial port
   Serial.begin(9600);
@@ -100,6 +93,15 @@ void radioLED() {
   digitalWrite(heartBeatLedPin, HIGH);
   delay(5);
   digitalWrite(heartBeatLedPin, LOW);  
+}
+
+void initBlinker(volatile LED_BLINKER* led, int pin, int burst, int freq, int delay) {
+  pinMode(pin, OUTPUT);
+  led->pin     = pin;
+  led->burst   = burst;
+  led->freq    = freq;
+  led->delay   = delay;
+  led->enabled = 0;  
 }
 
 void blinkLED(volatile LED_BLINKER* led) {
