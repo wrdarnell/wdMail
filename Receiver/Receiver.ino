@@ -7,25 +7,26 @@
 #include <RF24.h>
 #include "../../wdMail/Common/wdMail.h"
 
-const int    statusLedPin = 2;
-const int     alertLedPin = 3;
-const int heartBeatLedPin = 4;
-const int   alertResetPin = 5;
+const int  statusLedPin = 2;
+const int   alertLedPin = 3;
+const int   radioLedPin = 4;
+const int alertResetPin = 5;
 
 volatile unsigned long lastReset;
 
 volatile LED_BLINKER alertBlinker;
 volatile LED_BLINKER statusBlinker;
+volatile LED_BLINKER radioBlinker;
 
 RF24 radio(7, 8); // CE, CSN
 
 void setup() {
   // Setup LED Pins
-  pinMode(heartBeatLedPin, OUTPUT);
   pinMode(alertResetPin,   INPUT );
 
   initBlinker(&alertBlinker,   alertLedPin, 10, 25,  5);
   initBlinker(&statusBlinker, statusLedPin,  1,  5, 10);
+  initBlinker(&radioBlinker,   radioLedPin,  1,  5,  0);
 
   // Warm up serial port
   Serial.begin(9600);
@@ -44,6 +45,7 @@ void loop() {
   checkForRadioMessage();
   blinkLED(&alertBlinker);
   blinkLED(&statusBlinker);
+  blinkLED(&radioBlinker);
 }
 
 void watchResetButton() {
@@ -69,7 +71,7 @@ void healthCheck() {
 
 void checkForRadioMessage() {
   if (radio.available()) {
-    radioLED();
+    startBlinker(&radioBlinker);
     
     char text[32] = "";
     radio.read(&text, sizeof(text));
@@ -86,12 +88,6 @@ void notifySerial(char* message) {
   char buf[51];
   sprintf(buf, "%s\n", message);
   Serial.write(buf);
-}
-
-void radioLED() {
-  digitalWrite(heartBeatLedPin, HIGH);
-  delay(5);
-  digitalWrite(heartBeatLedPin, LOW);  
 }
 
 void initBlinker(volatile LED_BLINKER* led, int pin, int burst, int freq, int delay) {
@@ -116,6 +112,8 @@ void blinkLED(volatile LED_BLINKER* led) {
         if (led->count > led->burst) {
           led->next = now + (led->delay * 1000);
           led->count = 0;
+          if (led->delay == 0)
+            led->enabled = 0;
         } else {
           led->next = now + led->freq;
         }
