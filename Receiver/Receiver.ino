@@ -14,10 +14,10 @@ const int   alertResetPin = 5;
 
 const int alertDelayS  = 5;
 
-volatile unsigned long lastAlert;
 volatile unsigned long lastStatus;
 volatile unsigned long lastReset;
-volatile           int alertOn;
+
+volatile LED_BLINKER alertBlinker;
 
 RF24 radio(7, 8); // CE, CSN
 
@@ -28,6 +28,12 @@ void setup() {
   pinMode(heartBeatLedPin, OUTPUT);
   pinMode(alertResetPin,   INPUT );
 
+  alertBlinker.pin     = alertLedPin;
+  alertBlinker.burst   = 10;
+  alertBlinker.freq    = 25;
+  alertBlinker.delay   = 5;
+  alertBlinker.enabled = 0;
+
   // Warm up serial port
   Serial.begin(9600);
   while (!Serial) {;}
@@ -37,29 +43,24 @@ void setup() {
   radio.openReadingPipe(0, pipeAddress);
   radio.setPALevel(radioPowerLevel);
   radio.startListening();
-
-  // Defaults
-  alertOn = 0;
 }
 
 void loop() {
   watchResetButton();
   checkForRadioMessage();
-  alertLED();
+  blinkLED(&alertBlinker);
   steadyStateLED();
 }
 
 void watchResetButton() {
   // Watches the reset button.  If pushed, clear alert status and flash all LEDs
   if ((((long)millis() - lastReset) > 2000) && digitalRead(alertResetPin)) {
-    alertOn = 0;
-    digitalWrite(alertLedPin,     HIGH);
+    stopBlinker(&alertBlinker);
+    
     digitalWrite(statusLedPin,    HIGH);
-    digitalWrite(heartBeatLedPin, HIGH);
     delay(250);
-    digitalWrite(alertLedPin,     LOW);
     digitalWrite(statusLedPin,    LOW);
-    digitalWrite(heartBeatLedPin, LOW);
+
     notifySerial((char*)"Reset Button Pressed");
     lastReset = millis();
   }
@@ -73,7 +74,7 @@ void checkForRadioMessage() {
     radio.read(&text, sizeof(text));
     
     if (!strcmp(text, mailMessage)) {
-      alertOn = 1;
+      startBlinker(&alertBlinker);
     }
     
     notifySerial(text);
@@ -89,19 +90,6 @@ void steadyStateLED() {
   }
 }
 
-void alertLED() {
-  int i;
-  if (alertOn && ((long)millis() - lastAlert) > (alertDelayS * 1000)) {
-    for (i=0;i<10;i++) {
-      digitalWrite(alertLedPin, HIGH);
-      delay(25);
-      digitalWrite(alertLedPin, LOW);
-      delay(25);
-      lastAlert = millis();
-    }
-  }
-}
-
 void notifySerial(char* message) {
   char buf[51];
   sprintf(buf, "%s\n", message);
@@ -112,4 +100,39 @@ void radioLED() {
   digitalWrite(heartBeatLedPin, HIGH);
   delay(5);
   digitalWrite(heartBeatLedPin, LOW);  
+}
+
+void blinkLED(volatile LED_BLINKER* led) {
+  int state = digitalRead(led->pin);
+  if (!led->enabled) {
+    if (state)
+      digitalWrite(led->pin, LOW);
+  } else {
+    unsigned long now = millis();
+    if (now > led->next) {
+      if (state) {
+        digitalWrite(led->pin, LOW);
+        if (led->count > led->burst) {
+          led->next = now + (led->delay * 1000);
+          led->count = 0;
+        } else {
+          led->next = now + led->freq;
+        }
+      } else {
+        digitalWrite(led->pin, HIGH);
+        (*led).count++;
+        led->next = now + led->freq;        
+      }
+    }
+  }
+}
+
+void startBlinker(volatile LED_BLINKER* led) {
+  led->enabled = 1;
+  led->count   = 0;
+  led->next    = millis();
+}
+
+void stopBlinker(volatile LED_BLINKER* led) {
+  led->enabled = 0;
 }
