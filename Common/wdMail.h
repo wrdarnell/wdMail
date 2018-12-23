@@ -4,5 +4,5 @@
 
 const byte pipeAddress[6]     = "11977"; // Transmit pipe
 const char mailMessage[]      = "You've Got Mail!";
-const char heartBeatMessage[] = "Heartbeat";
+const char heartbeatMessage[] = "Heartbeat";
 const int  radioPowerLevel    = RF24_PA_MIN;

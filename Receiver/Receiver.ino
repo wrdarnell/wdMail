@@ -43,13 +43,13 @@ void setup() {
 }
 
 void loop() {
-  WatchResetButton();
-  CheckForRadioMessage();
-  AlertLED();
-  SteadyStateLED();
+  watchResetButton();
+  checkForRadioMessage();
+  alertLED();
+  steadyStateLED();
 }
 
-void WatchResetButton() {
+void watchResetButton() {
   // Watches the reset button.  If pushed, clear alert status and flash all LEDs
   if ((((long)millis() - lastReset) > 2000) && digitalRead(alertResetPin)) {
     alertOn = 0;
@@ -60,23 +60,27 @@ void WatchResetButton() {
     digitalWrite(alertLedPin,     LOW);
     digitalWrite(statusLedPin,    LOW);
     digitalWrite(heartBeatLedPin, LOW);
+    notifySerial((char*)"Reset Button Pressed");
     lastReset = millis();
   }
 }
 
-void CheckForRadioMessage() {
+void checkForRadioMessage() {
   if (radio.available()) {
-    HeartBeatLED(); // Flash for radio traffic
     char text[32] = "";
     radio.read(&text, sizeof(text));
+    
     if (!strcmp(text, mailMessage)) {
       alertOn = 1;
+    } else if (!strcmp(text, heartbeatMessage)) {
+      heartbeatLED(); // Flash for radio traffic
     }
-    NotifySerial(text);
+    
+    notifySerial(text);
   }
 }
 
-void SteadyStateLED() {
+void steadyStateLED() {
   if (Serial && ((long)millis() - lastStatus) > 3000) {
     digitalWrite(statusLedPin, HIGH);
     delay(5);
@@ -85,7 +89,7 @@ void SteadyStateLED() {
   }
 }
 
-void AlertLED() {
+void alertLED() {
   int i;
   if (alertOn && ((long)millis() - lastAlert) > (alertDelayS * 1000)) {
     for (i=0;i<10;i++) {
@@ -98,14 +102,14 @@ void AlertLED() {
   }
 }
 
-void NotifySerial(char* message) {
+void notifySerial(char* message) {
   char buf[51];
   sprintf(buf, "%s\n", message);
   Serial.write(buf);
 }
 
-void HeartBeatLED() {
+void heartbeatLED() {
   digitalWrite(heartBeatLedPin, HIGH);
-  delay(250);
+  delay(25);
   digitalWrite(heartBeatLedPin, LOW);  
 }
