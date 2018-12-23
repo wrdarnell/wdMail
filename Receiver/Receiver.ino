@@ -39,7 +39,7 @@ void setup() {
   radio.startListening();
 
   // Defaults
-  alertOn = 1;
+  alertOn = 0;
 }
 
 void loop() {
@@ -99,7 +99,9 @@ void AlertLED() {
 }
 
 void NotifySerial(char* message) {
-  Serial.write(message);
+  char buf[51];
+  sprintf(buf, "%s\n", message);
+  Serial.write(buf);
 }
 
 void HeartBeatLED() {
