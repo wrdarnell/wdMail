@@ -10,7 +10,7 @@
 const int  sensorPin      =       2; // Number of pin to listen to
 const long debouncingMs   =     250; // Milliseconds to wait for debounce
 const int  dupAlertWaitS  =       1; // Seconds to wait until firing another alert
-const int  heartbeatS     =     360; // Seconds between heartbeats.  0 for no heartbeats
+const int  heartbeatS     =     300; // Seconds between heartbeats.  0 for no heartbeats
 
 volatile          int  sensorState = 0;
 volatile unsigned long lastSensorFireMs;

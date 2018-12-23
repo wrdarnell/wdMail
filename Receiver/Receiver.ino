@@ -110,6 +110,6 @@ void notifySerial(char* message) {
 
 void heartbeatLED() {
   digitalWrite(heartBeatLedPin, HIGH);
-  delay(25);
+  delay(5);
   digitalWrite(heartBeatLedPin, LOW);  
 }
