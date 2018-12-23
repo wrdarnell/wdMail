@@ -10,7 +10,6 @@
 const int  sensorPin      =       2; // Number of pin to listen to
 const long debouncingMs   =     250; // Milliseconds to wait for debounce
 const int  dupAlertWaitS  =       1; // Seconds to wait until firing another alert
-const int  ledPin         = LED_BUILTIN; // <-- DEBUG
 
 volatile          int  sensorState = 0;
 volatile unsigned long lastSensorFireMs;
@@ -29,10 +28,6 @@ void setup() {
   // Setup an interrupt to watch the sensor pin
   pinMode(sensorPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(sensorPin), debounceInterrupt, CHANGE);
-
-  // DEBUG
-  pinMode(ledPin, OUTPUT);
-  // END DEBUG
 }
 
 void loop() {
@@ -49,19 +44,9 @@ void debounceInterrupt() {
 
 void onSensorChange() {
    if (((long)millis() - lastAlertMs) >= (dupAlertWaitS * 1000)) {
-      sendAlert();
+      sendMessage(mailMessage);
       lastAlertMs = millis(); 
    }
-}
-
-void debugLED() {
-  int currentState = digitalRead(ledPin);
-  digitalWrite(ledPin, !currentState);
-}
-
-void sendAlert() {
-  sendMessage(mailMessage);
-  debugLED();
 }
 
 void sendMessage(const char* msg) {
