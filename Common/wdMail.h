@@ -6,3 +6,4 @@ const byte pipeAddress[6]     = "11977"; // Transmit pipe
 const char mailMessage[]      = "You've Got Mail!";
 const char heartbeatMessage[] = "Heartbeat";
 const int  radioPowerLevel    = RF24_PA_MAX;
+const int  radioDataRate      = RF24_250KBPS;

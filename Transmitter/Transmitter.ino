@@ -3,7 +3,6 @@
 // Date: 19-DEC-2018
 
 #include <SPI.h>
-#include <nRF24L01.h>
 #include <RF24.h>
 #include "../../wdMail/Common/wdMail.h"
 
@@ -24,6 +23,7 @@ void setup() {
   radio.begin();
   radio.openWritingPipe(pipeAddress);
   radio.setPALevel(radioPowerLevel);
+  radio.setDataRate(radioDataRate);
   radio.stopListening();
   radio.powerDown();
 
