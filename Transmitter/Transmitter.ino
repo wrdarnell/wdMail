@@ -10,7 +10,7 @@
 const int  sensorPin      =       2; // Number of pin to listen to
 const long debouncingMs   =     250; // Milliseconds to wait for debounce
 const int  dupAlertWaitS  =       1; // Seconds to wait until firing another alert
-const int  heartbeatS     =     300; // Seconds between heartbeats.  0 for no heartbeats
+const int  heartbeatS     =     30 ; // Seconds between heartbeats.  0 for no heartbeats
 
 volatile          int  sensorState = 0;
 volatile unsigned long lastSensorFireMs;
@@ -29,6 +29,7 @@ void setup() {
 
   // Setup an interrupt to watch the sensor pin
   pinMode(sensorPin, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(sensorPin), debounceInterrupt, CHANGE);
 }
 
@@ -46,7 +47,9 @@ void debounceInterrupt() {
 
 void onSensorChange() {
    if (((long)millis() - lastAlertMs) >= (dupAlertWaitS * 1000)) {
+      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
       sendMessage(mailMessage);
+      
       lastAlertMs = millis(); 
    }
 }
